@@ -5,6 +5,8 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 router.get("/profiles", userController.getProfiles);
 
+router.get("/count", userController.getTotalStudents);
+
 // Route pour récupérer le profil de l'utilisateur
 router.get("/profile", authMiddleware, userController.getProfile);
 

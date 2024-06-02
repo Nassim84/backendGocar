@@ -1,8 +1,7 @@
-// models/adminHistory.js
 module.exports = (sequelize, DataTypes) => {
-	const AdminHistory = sequelize.define("AdminHistory", {
+	const AdminHistories = sequelize.define("AdminHistories", {
 		action: {
-			type: DataTypes.ENUM("view", "update", "delete"),
+			type: DataTypes.ENUM("create", "update", "delete"),
 			allowNull: false,
 		},
 		affectedData: {
@@ -16,20 +15,22 @@ module.exports = (sequelize, DataTypes) => {
 		},
 	});
 
-	AdminHistory.associate = (models) => {
-		AdminHistory.belongsTo(models.Users, {
+	AdminHistories.associate = (models) => {
+		AdminHistories.belongsTo(models.Users, {
 			foreignKey: {
 				name: "adminId",
 				allowNull: false,
 			},
+			onDelete: "RESTRICT",
 		});
-		AdminHistory.belongsTo(models.Users, {
+		AdminHistories.belongsTo(models.Users, {
 			foreignKey: {
 				name: "targetUserId",
-				allowNull: false,
+				allowNull: true, // Autorise les valeurs NULL pour targetUserId
 			},
+			onDelete: "SET NULL",
 		});
 	};
 
-	return AdminHistory;
+	return AdminHistories;
 };

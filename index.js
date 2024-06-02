@@ -35,6 +35,7 @@ const userRoutes = require("./routes/userRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const tripRoutes = require("./routes/tripRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const AdminHistoriesRoutes = require("./routes/adminHistoryRoutes");
 
 // Utilisation des routes
 app.use("/api/auth", authRoutes);
@@ -42,6 +43,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/trips", tripRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/admin-history", AdminHistoriesRoutes);
 
 // Middleware de gestion des erreurs
 app.use((err, req, res, next) => {

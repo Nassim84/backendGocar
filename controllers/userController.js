@@ -74,3 +74,15 @@ exports.deleteAccount = async (req, res) => {
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
+
+// Total d'USER
+
+exports.getTotalStudents = async (req, res) => {
+	try {
+		const totalStudents = await Users.count();
+		res.status(200).json({ count: totalStudents });
+	} catch (error) {
+		console.error("Error retrieving total students:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+};
