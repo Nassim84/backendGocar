@@ -1,37 +1,14 @@
+require("dotenv").config();
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const { Users, AdminHistories } = require("../models");
 const sendPasswordEmail = require("../utils/email");
-
-function generatePassword() {
-	const length = 8;
-	const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
-	const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	const numberChars = "0123456789";
-	let password = "";
-
-	password += lowercaseChars.charAt(crypto.randomInt(0, lowercaseChars.length));
-	password += uppercaseChars.charAt(crypto.randomInt(0, uppercaseChars.length));
-	password += numberChars.charAt(crypto.randomInt(0, numberChars.length));
-
-	const allChars = lowercaseChars + uppercaseChars + numberChars;
-	for (let i = 3; i < length; i++) {
-		password += allChars.charAt(crypto.randomInt(0, allChars.length));
-	}
-
-	password = password
-		.split("")
-		.sort(() => 0.5 - crypto.randomInt(0, 2))
-		.join("");
-
-	return password;
-}
+const { generatePassword } = require("../utils/passwordUtils");
+const logger = require("../utils/logger");
 
 exports.createUser = async (req, res) => {
 	try {
-		// Générer un mot de passe aléatoire
 		const password = generatePassword();
-
 		const salt = await bcrypt.genSalt(10);
 		const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -46,30 +23,43 @@ exports.createUser = async (req, res) => {
 
 		await sendPasswordEmail(req.body.email, password);
 
+		logger.info(`New user created with id ${user.id} by admin ${req.user.id}`);
 		res.status(201).json(user);
 	} catch (error) {
-		console.error(error);
+		logger.error(`Error creating user by admin ${req.user.id}:`, error);
 		res.status(500).json({ error: "Server error" });
 	}
 };
 
 exports.updateUser = async (req, res) => {
 	try {
-		const user = await Users.findByPk(req.params.id);
+		const userId = req.params.id;
+		const user = await Users.findByPk(userId);
+
 		if (!user) {
+			logger.warn(
+				`User not found with id ${userId} for update by admin ${req.user.id}`
+			);
 			return res.status(404).json({ error: "User not found" });
 		}
+
 		const oldUserData = user.toJSON();
 		await user.update(req.body);
+
 		await AdminHistories.create({
 			action: "update",
 			affectedData: { old: oldUserData, new: user.toJSON() },
 			adminId: req.user.id,
-			targetUserId: user.id,
+			targetUserId: userId,
 		});
+
+		logger.info(`User updated with id ${userId} by admin ${req.user.id}`);
 		res.json(user);
 	} catch (error) {
-		console.error(error);
+		logger.error(
+			`Error updating user with id ${userId} by admin ${req.user.id}:`,
+			error
+		);
 		res.status(500).json({ error: "Server error" });
 	}
 };
@@ -77,10 +67,12 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
 	try {
 		const userId = req.params.id;
-
 		const user = await Users.findByPk(userId);
 
 		if (!user) {
+			logger.warn(
+				`User not found with id ${userId} for deletion by admin ${req.user.id}`
+			);
 			return res.status(404).json({ error: "User not found" });
 		}
 
@@ -95,9 +87,13 @@ exports.deleteUser = async (req, res) => {
 
 		await user.destroy();
 
+		logger.info(`User deleted with id ${userId} by admin ${req.user.id}`);
 		res.status(200).json({ message: "User deleted successfully" });
 	} catch (error) {
-		console.error(error);
+		logger.error(
+			`Error deleting user with id ${userId} by admin ${req.user.id}:`,
+			error
+		);
 		res.status(500).json({ error: "Server error" });
 	}
 };

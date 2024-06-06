@@ -1,11 +1,13 @@
 const { Users } = require("../models");
+const logger = require("../utils/logger");
 
 exports.getProfiles = async (req, res) => {
 	try {
 		const users = await Users.findAll();
 		res.json(users);
 	} catch (error) {
-		res.status(500).json({ error: error.message });
+		logger.error("Error retrieving profiles:", error);
+		res.status(500).json({ error: "Internal server error" });
 	}
 };
 
@@ -19,12 +21,14 @@ exports.getProfile = async (req, res) => {
 		});
 
 		if (!user) {
+			logger.warn(`User not found with id: ${userId}`);
 			return res.status(404).json({ error: "User not found" });
 		}
 
+		logger.info(`User profile retrieved successfully for id: ${userId}`);
 		res.status(200).json(user);
 	} catch (error) {
-		console.error(error);
+		logger.error(`Error retrieving user profile for id ${userId}:`, error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
@@ -38,6 +42,7 @@ exports.updateProfile = async (req, res) => {
 		const user = await Users.findByPk(userId);
 
 		if (!user) {
+			logger.warn(`User not found with id: ${userId}`);
 			return res.status(404).json({ error: "User not found" });
 		}
 
@@ -48,9 +53,10 @@ exports.updateProfile = async (req, res) => {
 
 		await user.save();
 
+		logger.info(`User profile updated successfully for id: ${userId}`);
 		res.status(200).json({ message: "Profile updated successfully" });
 	} catch (error) {
-		console.error(error);
+		logger.error(`Error updating user profile for id ${userId}:`, error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
@@ -63,26 +69,30 @@ exports.deleteAccount = async (req, res) => {
 		const user = await Users.findByPk(userId);
 
 		if (!user) {
+			logger.warn(`User not found with id: ${userId}`);
 			return res.status(404).json({ error: "User not found" });
 		}
 
 		await user.destroy();
 
+		logger.info(`User account deleted successfully for id: ${userId}`);
 		res.status(200).json({ message: "Account deleted successfully" });
 	} catch (error) {
-		console.error(error);
+		logger.error(`Error deleting user account for id ${userId}:`, error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
 
 // Total d'USER
-
 exports.getTotalStudents = async (req, res) => {
 	try {
 		const totalStudents = await Users.count();
+		logger.info(
+			`Total students count retrieved successfully: ${totalStudents}`
+		);
 		res.status(200).json({ count: totalStudents });
 	} catch (error) {
-		console.error("Error retrieving total students:", error);
+		logger.error("Error retrieving total students:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };

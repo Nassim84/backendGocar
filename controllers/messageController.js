@@ -1,5 +1,6 @@
-const { Messages, User } = require("../models");
-const { io } = require("../index"); // Importez l'instance Socket.IO depuis index.js
+const { Messages, Users } = require("../models");
+const { io } = require("../index");
+const logger = require("../utils/logger");
 
 exports.createMessage = async (req, res) => {
 	try {
@@ -12,12 +13,17 @@ exports.createMessage = async (req, res) => {
 		// Diffusez le nouveau message aux clients connectés
 		if (io) {
 			io.emit("newMessage", message);
+			logger.info(`New message created for trip ${tripId} by user ${senderId}`);
 		} else {
-			console.log("Socket.IO is not configured correctly.");
+			logger.error("Socket.IO is not configured correctly.");
 		}
+
 		res.status(201).json(message);
 	} catch (error) {
-		console.error(error);
+		logger.error(
+			`Error creating message for trip ${tripId} by user ${senderId}:`,
+			error
+		);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
@@ -28,11 +34,16 @@ exports.getMessagesByTrip = async (req, res) => {
 
 		const messages = await Messages.findAll({
 			where: { tripId },
+			include: {
+				model: Users,
+				attributes: ["id", "name", "firstname"],
+			},
 		});
 
+		logger.info(`Retrieved messages for trip ${tripId}`);
 		res.status(200).json(messages);
 	} catch (error) {
-		console.error(error);
+		logger.error(`Error retrieving messages for trip ${tripId}:`, error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
