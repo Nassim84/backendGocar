@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const logger = require("../utils/logger"); // Import du logger
+const logger = require("../utils/logger");
 require("dotenv").config();
 
 const authMiddleware = (req, res, next) => {
