@@ -3,8 +3,23 @@ const logger = require("../utils/logger");
 
 exports.getProfiles = async (req, res) => {
 	try {
-		const users = await Users.findAll();
-		res.json(users);
+		const page = parseInt(req.query.page) || 1;
+		const limit = parseInt(req.query.limit) || 10;
+		const offset = (page - 1) * limit;
+
+		const { count, rows: users } = await Users.findAndCountAll({
+			limit,
+			offset,
+		});
+
+		const totalPages = Math.ceil(count / limit);
+
+		res.json({
+			users,
+			currentPage: page,
+			totalPages,
+			totalUsers: count,
+		});
 	} catch (error) {
 		logger.error("Error retrieving profiles:", error);
 		res.status(500).json({ error: "Internal server error" });

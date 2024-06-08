@@ -1,10 +1,31 @@
-require("dotenv").config();
-const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const { Users, AdminHistories } = require("../models");
 const sendPasswordEmail = require("../utils/email");
 const { generatePassword } = require("../utils/passwordUtils");
 const logger = require("../utils/logger");
+
+exports.getAdminHistories = async (req, res) => {
+	try {
+		const adminHistories = await AdminHistories.findAll({
+			order: [["timestamp", "DESC"]],
+			include: [
+				{ model: Users, as: "User", foreignKey: "adminId" },
+				{ model: Users, as: "User", foreignKey: "targetUserId" },
+			],
+		});
+
+		logger.info(
+			`Admin histories retrieved successfully by admin ${req.user.id}`
+		);
+		res.status(200).json(adminHistories);
+	} catch (error) {
+		logger.error(
+			`Error retrieving admin histories by admin ${req.user.id}:`,
+			error
+		);
+		res.status(500).json({ error: "Server error" });
+	}
+};
 
 exports.createUser = async (req, res) => {
 	try {

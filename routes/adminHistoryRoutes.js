@@ -5,6 +5,14 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const adminAuthMiddleware = require("../middlewares/adminAuthMiddleware");
 const adminMiddleware = require("../middlewares/admin");
 
+router.get(
+	"/",
+	authMiddleware,
+	adminAuthMiddleware,
+	adminMiddleware,
+	adminController.getAdminHistories
+);
+
 router.post(
 	"/users",
 	authMiddleware,
