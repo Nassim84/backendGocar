@@ -2,8 +2,34 @@ const { Trips, Users, UserTrips } = require("../models");
 const { Op } = require("sequelize");
 const logger = require("../utils/logger");
 
+// Récupérer tous les trajets avec pagination
+exports.getAllTrips = async (req, res) => {
+	try {
+		const page = parseInt(req.query.page) || 1;
+		const limit = parseInt(req.query.limit) || 5;
+		const offset = (page - 1) * limit;
+
+		const { count, rows: trips } = await Trips.findAndCountAll({
+			limit,
+			offset,
+		});
+
+		res.status(200).json({
+			trips,
+			total: count,
+			totalPages: Math.ceil(count / limit),
+			currentPage: page,
+		});
+	} catch (error) {
+		res
+			.status(500)
+			.json({ message: "Erreur lors de la récupération des trajets", error });
+	}
+};
+
 // Créer un nouveau trajet
 exports.createTrip = async (req, res) => {
+	const driverId = req.userId;
 	try {
 		const {
 			startLocation,
@@ -13,7 +39,6 @@ exports.createTrip = async (req, res) => {
 			recurringDays,
 			availableSeats,
 		} = req.body;
-		const driverId = req.userId;
 
 		const trip = await Trips.create({
 			startLocation,
@@ -31,7 +56,10 @@ exports.createTrip = async (req, res) => {
 		);
 		res.status(201).json(trip);
 	} catch (error) {
-		logger.error(`Error creating trip for driver ${driverId}:`, error);
+		logger.error(
+			`Error creating trip for driver ${driverId || "unknown"}:`,
+			error
+		);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };

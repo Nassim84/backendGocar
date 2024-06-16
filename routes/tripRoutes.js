@@ -3,6 +3,9 @@ const router = express.Router();
 const tripController = require("../controllers/tripController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
+// Route pour récuperer tous les trajets
+router.get("/", authMiddleware, tripController.getAllTrips);
+
 // Route pour créer un nouveau trajet
 router.post("/", authMiddleware, tripController.createTrip);
 
