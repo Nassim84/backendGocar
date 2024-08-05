@@ -1,5 +1,5 @@
 # Utilise l'image officielle de Node.js 20
-FROM node:18
+FROM node:20
 
 # Crée un répertoire pour contenir le code de l'application dans le conteneur
 WORKDIR /app
