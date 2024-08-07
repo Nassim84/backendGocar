@@ -82,4 +82,4 @@ sequelize
 		logger.error("Error syncing database:", error);
 	});
 
-module.exports = { io };
+module.exports = app;
