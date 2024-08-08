@@ -38,7 +38,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
+      - name: Wait for MySQL
+        run: |
+          for i in {30..0}; do
+            if mysqladmin ping -h 127.0.0.1 --silent; then
+              break
+            fi
+            echo 'Waiting for MySQL...'
+            sleep 1
+          done
+
+      - name: Run tests with open handle detection
         env:
           NODE_ENV: test
           DB_HOST: 127.0.0.1
@@ -46,4 +56,4 @@ jobs:
           DB_NAME: gocar_test
           DB_USER: root
           DB_PASSWORD: hvqSpNRnsNFVfnOf
-        run: npm test
+        run: npm test -- --detectOpenHandles
