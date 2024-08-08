@@ -20,6 +20,11 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: hvqSpNRnsNFVfnOf
           MYSQL_DATABASE: gocar_test
+        options: >-
+          --health-cmd "mysqladmin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -30,24 +35,26 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Set environment to test
-        run: echo "NODE_ENV=test" >> $GITHUB_ENV
-
-      - name: Wait for MySQL to be ready
-        run: |
-          for i in {30..0}; do
-            if mysqladmin ping -h"localhost" --silent; then
-              break
-            fi
-            echo 'MySQL still not ready, waiting...'
-            sleep 1
-          done
-
       - name: Install dependencies
         run: npm install
 
+      - name: Wait for MySQL
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -P 3306 --silent; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 2
+          done
+          echo "MySQL is ready"
+
       - name: Run tests
         run: npm test
+        env:
+          NODE_ENV: test
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_PORT: 3306
+          DATABASE_USER: root
+          DATABASE_PASSWORD: hvqSpNRnsNFVfnOf
+          DATABASE_NAME: gocar_test
 
   build-and-push-docker:
     runs-on: ubuntu-latest
