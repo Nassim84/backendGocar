@@ -12,6 +12,16 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: hvqSpNRnsNFVfnOf
+          MYSQL_DATABASE: gocar_test
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+        ports:
+          - 3306:3306
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,7 +34,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Wait for MySQL to be ready
+        run: |
+          until mysqladmin ping --host=localhost --user=root --password=hvqSpNRnsNFVfnOf --silent; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 2
+          done
+
       - name: Run tests
+        env:
+          DB_USERNAME: root
+          DB_PASSWORD: hvqSpNRnsNFVfnOf
+          DB_NAME: gocar_test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
         run: npm test
 
   build-and-push-docker:
