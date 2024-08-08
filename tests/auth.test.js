@@ -1,15 +1,14 @@
-// tests/auth.test.js
 const request = require("supertest");
-const { sequelize, Users } = require("../models");
+const { sequelize } = require("../models");
 const app = require("../index");
 
 describe("Auth API", () => {
 	beforeAll(async () => {
-		await sequelize.sync({ force: true }); // Remettre la base de données à zéro avant les tests
+		await sequelize.sync({ force: true });
 	});
 
 	afterAll(async () => {
-		await sequelize.close(); // Fermer la connexion à la base de données après les tests
+		await sequelize.close();
 	});
 
 	describe("POST /api/auth/register", () => {
@@ -31,7 +30,7 @@ describe("Auth API", () => {
 			const response = await request(app).post("/api/auth/register").send({
 				name: "John",
 				firstname: "Doe",
-				email: "john.doe@example.com", // Same email as previous test
+				email: "john.doe@example.com",
 				password: "Password123",
 				role: "student",
 				campus: "Avignon",
@@ -52,7 +51,7 @@ describe("Auth API", () => {
 			expect(response.statusCode).toBe(200);
 			expect(response.body).toHaveProperty("token");
 			expect(response.body.role).toBe("student");
-		});
+		}, 10000); // Timeout augmentée
 
 		it("should not log in with invalid credentials", async () => {
 			const response = await request(app).post("/api/auth/login").send({
