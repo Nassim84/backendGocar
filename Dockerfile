@@ -4,9 +4,8 @@ FROM node:20
 # Crée un répertoire pour contenir le code de l'application dans le conteneur
 WORKDIR /app
 
-# Copie les fichiers package.json et package-lock.json
+# Copie les fichiers package.json 
 COPY package.json ./
-COPY package-lock.json ./
 
 # Installe les dépendances de l'application
 RUN npm install
