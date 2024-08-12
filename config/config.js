@@ -21,7 +21,7 @@ module.exports = {
 		username: process.env.PROD_DB_USERNAME || root,
 		password: process.env.PROD_DB_PASSWORD || ZeQosPjmCNEAkGhDDLuNLowUYlHDYyMz,
 		database: process.env.PROD_DB_DATABASE || railway,
-		host: (process.env.PROD_DB_HOST ||= mysql.railway.internal),
+		host: process.env.PROD_DB_HOST || mysql.railway.internal,
 		port: process.env.PROD_DB_PORT || 3306,
 		dialect: "mysql",
 	},
