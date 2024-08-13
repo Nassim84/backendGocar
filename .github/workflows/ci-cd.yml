@@ -14,26 +14,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: List current directory
+        run: pwd
+
+      - name: List files in backendGocar
+        run: ls -la
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - name: List files in backendGocar
-        run: ls -la backendGocar
-
       - name: Install dependencies
         run: npm install
-        working-directory: backendGocar
 
       - name: Run tests
         run: npm test
-        working-directory: backendGocar
 
       - name: Build Docker images
         run: |
-          docker build -t my-backend-image backendGocar
-          docker build -t my-frontend-image frontend-gocar
+          docker build -t my-backend-image .
+          docker build -t my-frontend-image ../frontend-gocar
 
       - name: Push Docker images
         env:
