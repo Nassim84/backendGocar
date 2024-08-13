@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backendGocar
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./backendGocar
+
+      - name: Build Docker images
+        run: |
+          docker build -t my-backend-image ./backendGocar
+          docker build -t my-frontend-image ./frontend-gocar
+
+      - name: Push Docker images
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          docker push my-backend-image
+          docker push my-frontend-image
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
+        run: |
+          curl -X POST "https://api.railway.app/v1/projects/{project_id}/deploy" \
+          -H "Authorization: Bearer $RAILWAY_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"branch": "${{ github.ref }}" }'
