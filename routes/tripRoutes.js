@@ -31,8 +31,10 @@ router.delete("/:id", authMiddleware, tripController.deleteTrip);
 // Route pour rechercher des trajets en fonction de critères
 router.get("/search", authMiddleware, tripController.searchTrips);
 
+// Route pour rejoindre un trajet
 router.post("/:id/join", authMiddleware, tripController.joinTrip);
 
+// Route pour quitter un trajet
 router.delete("/:tripId/leave", authMiddleware, tripController.leaveTrip);
 
 module.exports = router;
