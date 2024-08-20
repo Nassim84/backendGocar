@@ -28,6 +28,11 @@ app.use((req, res, next) => {
 	logger.info(`${req.method} ${req.url}`);
 	next();
 });
+app.use(express.static("public"));
+
+app.get("/", (req, res) => {
+	res.sendFile(__dirname + "/public/index.html");
+});
 
 // Importation des routes
 const authRoutes = require("./routes/authRoutes");
